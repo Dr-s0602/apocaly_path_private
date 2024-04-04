@@ -1,0 +1,41 @@
+plugins {
+	id 'java' // Java 플러그인을 적용합니다. 이는 기본 Java 컴파일과 패키징 작업을 지원합니다.
+	id 'org.springframework.boot' version '3.2.3' // Spring Boot 플러그인을 적용하고 버전을 지정합니다. Spring Boot 프로젝트의 기본 설정을 자동화합니다.
+	id 'io.spring.dependency-management' version '1.1.4' // Spring Dependency Management 플러그인을 적용합니다. 이는 의존성 관리를 쉽게 하기 위한 플러그인입니다.
+}
+
+group = 'com.apocaly' // 프로젝트의 그룹 ID를 설정합니다. 일반적으로 도메인 이름을 거꾸로 쓴 것을 사용합니다.
+version = '0.0.1-SNAPSHOT' // 프로젝트의 버전을 설정합니다. SNAPSHOT은 개발 중인 버전을 의미합니다.
+
+java {
+	sourceCompatibility = '17' // 소스 코드의 호환성을 Java 17 버전으로 설정합니다.
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor // annotationProcessor 구성을 compileOnly에 확장합니다. 컴파일 시간에만 필요한 의존성을 설정합니다.
+	}
+}
+
+repositories {
+	mavenCentral() // Maven Central 저장소를 사용하여 의존성을 해결합니다.
+}
+
+dependencies {
+	// Spring Boot와 관련된 스타터 및 기타 라이브러리 의존성을 정의합니다.
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa' // Spring Data JPA와 관련된 기본 설정과 의존성을 제공합니다.
+	implementation 'org.springframework.boot:spring-boot-starter-security' // Spring Security와 관련된 기본 설정과 의존성을 제공합니다.
+	implementation 'org.springframework.boot:spring-boot-starter-web' // Spring Web과 관련된 기본 설정과 의존성을 제공합니다.
+	compileOnly 'org.projectlombok:lombok' // Lombok 라이브러리를 컴파일 시간 의존성으로 추가합니다. 자동으로 getter, setter, constructor 등을 생성해 줍니다.
+	developmentOnly 'org.springframework.boot:spring-boot-devtools' // 개발 시 유용한 도구(예: 자동 리스타트)를 제공하는 Spring Boot Devtools를 추가합니다.
+	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client' // MariaDB JDBC 드라이버를 런타임 시 의존성으로 추가합니다.
+	annotationProcessor 'org.projectlombok:lombok' // Lombok을 annotation processor로 사용합니다.
+	testImplementation 'org.springframework.boot:spring-boot-starter-test' // 테스트를 위한 Spring Boot 테스트 스타터를 추가합니다.
+	testImplementation 'org.springframework.security:spring-security-test' // Spring Security 테스트를 위한 의존성을 추가합니다.
+	implementation 'io.jsonwebtoken:jjwt-api:0.11.5' // JWT를 생성하고 검증하기 위한 JJWT API를 추가합니다.
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5' // JJWT 구현체를 런타임 시 의존성으로 추가합니다.
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5' // JSON 처리를 위한 Jackson과 연동되는 JJWT 의존성을 런타임 시 추가합니다.
+}
+tasks.named('test') {
+	useJUnitPlatform() // 테스트 작업을 실행할 때 JUnit 플랫폼을 사용하도록 설정합니다.
+}
