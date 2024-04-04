@@ -50,4 +50,7 @@ public class User {
     @Column(name = "is_email_verified", nullable = false)
     private Boolean isEmailVerified;
 
+    @Column(name = "is_admin", nullable = false)
+    private Boolean isAdmin;
+
 }

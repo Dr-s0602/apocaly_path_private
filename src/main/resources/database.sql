@@ -9,3 +9,6 @@ CREATE TABLE IF NOT EXISTS users (
     is_email_verified TINYINT(1) NOT NULL DEFAULT 0,
     PRIMARY KEY (id)
     );
+
+ALTER TABLE users
+    ADD COLUMN is_admin TINYINT(1) DEFAULT 0;

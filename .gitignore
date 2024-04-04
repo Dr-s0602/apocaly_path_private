@@ -37,6 +37,6 @@ out/
 .vscode/
 
 ### ssl ###
-*.keystore.p12
+*.p12
 *.jks
 *.pem
