@@ -35,6 +35,8 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5' // JWT를 생성하고 검증하기 위한 JJWT API를 추가합니다.
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5' // JJWT 구현체를 런타임 시 의존성으로 추가합니다.
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5' // JSON 처리를 위한 Jackson과 연동되는 JJWT 의존성을 런타임 시 추가합니다.
+	implementation group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: '3.1.5' // 스프링 시큐리티 암호화
+
 }
 tasks.named('test') {
 	useJUnitPlatform() // 테스트 작업을 실행할 때 JUnit 플랫폼을 사용하도록 설정합니다.
