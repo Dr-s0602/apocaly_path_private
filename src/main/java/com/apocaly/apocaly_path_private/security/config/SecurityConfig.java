@@ -1,42 +1,61 @@
 package com.apocaly.apocaly_path_private.security.config;
 
-import com.apocaly.apocaly_path_private.security.filter.JwtAuthenticationFilter;
-import com.apocaly.apocaly_path_private.security.service.TokenService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.apocaly.apocaly_path_private.security.jwt.filter.JWTFilter;
+import com.apocaly.apocaly_path_private.security.jwt.filter.LoginFilter;
+import com.apocaly.apocaly_path_private.security.jwt.util.JWTUtil;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+
+@Configuration
 @EnableWebSecurity // 스프링 시큐리티 활성화
 public class SecurityConfig {
     private UserDetailsService userDetailsService;
 
-    private TokenService tokenService;
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-            .csrf(AbstractHttpConfigurer::disable)
-            // CSRF 보호기능 비활성화 REST API 구축할땐 일반적으로 비활성화
-            .authorizeHttpRequests(authz -> authz
-                    .requestMatchers("/api/auth/**").permitAll()
-                    .anyRequest().authenticated()
-            )
-            // 인증 규칙 정의 .requestMatchers("/api/auth/**").permitAll() /api/auth/** 패턴에 인증없이 접근 가능
-            // .anyRequest().authenticated() 위에서 정의한 패턴을 제외한 모든 요청에 대해 인증 요구
-            .sessionManagement(session -> session
-                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            );
-            // 세션 관리 정책 설정 세션 사용 안함
+    private final AuthenticationConfiguration authenticationConfiguration;
+    private final JWTUtil jwtUtil;
 
-        return http.build();
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil) {
+        this.authenticationConfiguration = authenticationConfiguration;
+        this.jwtUtil = jwtUtil;
     }
 
     @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(userDetailsService,tokenService);
+    public BCryptPasswordEncoder bCryptPasswordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    //AuthenticationManager Bean 등록
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+
+        return configuration.getAuthenticationManager();
+    }
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/user","/login","/").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class)
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration),jwtUtil), UsernamePasswordAuthenticationFilter.class)
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        return http.build();
     }
 }

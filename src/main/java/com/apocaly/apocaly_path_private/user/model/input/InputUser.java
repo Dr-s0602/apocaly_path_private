@@ -9,4 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class InputUser {
     private String email, password;
+
+    public InputUser(String username) {
+        this.email = username;
+    }
 }

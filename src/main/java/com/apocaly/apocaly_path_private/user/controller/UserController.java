@@ -28,10 +28,5 @@ public class UserController {
         User newUser = userService.signUpUser(user);
         return ResponseEntity.ok(newUser);
     }
-
-    @PostMapping("/user/login")
-    public ResponseEntity<?> login (@RequestBody InputUser user){
-        return userService.login(user);
-    }
 }
 
