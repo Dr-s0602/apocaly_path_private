@@ -2,12 +2,10 @@ package com.apocaly.apocaly_path_private.security.jwt.util;
 
 import com.apocaly.apocaly_path_private.user.model.entity.User;
 import com.apocaly.apocaly_path_private.user.repository.UserRepository;
-import com.apocaly.apocaly_path_private.user.service.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
-
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
@@ -17,58 +15,58 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Optional;
 
+// 스프링 컨테이너에 의해 관리되는 컴포넌트로 선언합니다.
 @Component
 public class JWTUtil {
 
+    // JWT 생성과 검증에 사용될 비밀키와 만료 시간을 필드로 선언합니다.
     private final SecretKey secretKey;
-
     private final long expirationTime;
     private final UserRepository userRepository;
 
-
+    // 생성자를 통해 application.properties에서 정의된 JWT 비밀키와 만료 시간, UserRepository를 주입받습니다.
     public JWTUtil(@Value("${jwt.secret}") String secret, @Value("${jwt.expiration}") long expirationTime, UserRepository userRepository) {
-        // SignatureAlgorithm.HS256을 사용하여 SecretKey를 생성합니다.
-        // secret.getBytes(StandardCharsets.UTF_8) 대신 Keys.secretKeyFor을 사용하여 키를 생성할 수 있습니다.
+        // 비밀키를 초기화합니다. 이 비밀키는 JWT의 서명에 사용됩니다.
         this.secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), SignatureAlgorithm.HS256.getJcaName());
-        // 미리 정의된 알고리즘을 사용
-        this.expirationTime = expirationTime;
-        this.userRepository = userRepository;
+        this.expirationTime = expirationTime; // JWT의 만료 시간을 설정합니다.
+        this.userRepository = userRepository; // 사용자 정보를 조회하기 위한 UserRepository 인스턴스를 초기화합니다.
     }
 
-    // 사용자의 이메일과 만료 시간을 사용하여 JWT 토큰을 생성합니다.
+    // 사용자의 이메일을 기반으로 JWT를 생성합니다.
     public String generateToken(String userEmail) {
-        // 사용자 정보를 조회
+        // UserRepository를 사용해 사용자 정보를 조회합니다.
         Optional<User> user = userRepository.findByEmail(userEmail);
 
+        // 사용자 정보가 없는 경우, UsernameNotFoundException을 발생시킵니다.
         if (!user.isPresent()) {
             throw new UsernameNotFoundException("User with email " + userEmail + " not found");
         }
 
-        // is_admin 값을 추출
+        // 사용자의 관리자 여부를 확인합니다.
         boolean isAdmin = user.get().getIsAdmin();
 
+        // JWT를 생성합니다. 여기서는 사용자 이메일을 주체(subject)로, 관리자 여부를 클레임으로 추가합니다.
         return Jwts.builder()
                 .setSubject(userEmail)
-                // "admin" 클레임 추가: true 또는 false
-                .claim("admin", isAdmin)
-                .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
-                .signWith(secretKey, SignatureAlgorithm.HS256)
-                .compact();
+                .claim("admin", isAdmin) // "admin" 클레임에 관리자 여부를 설정합니다.
+                .setExpiration(new Date(System.currentTimeMillis() + expirationTime)) // 만료 시간을 설정합니다.
+                .signWith(secretKey, SignatureAlgorithm.HS256) // 비밀키와 HS256 알고리즘으로 JWT를 서명합니다.
+                .compact(); // JWT 문자열을 생성합니다.
     }
 
-    // JWT 토큰에서 사용자의 이메일을 추출합니다.
+    // JWT에서 사용자 이메일을 추출합니다.
     public String getUserEmailFromToken(String token) {
         Claims claims = Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token).getBody();
         return claims.getSubject();
     }
 
-    // JWT 토큰의 만료를 체크합니다.
+    // JWT의 만료 여부를 검증합니다.
     public boolean isTokenExpired(String token) {
         Claims claims = Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token).getBody();
         return claims.getExpiration().before(new Date());
     }
 
-    // JWT 토큰에서 "admin" 클레임을 통해 사용자가 관리자인지 여부를 확인합니다.
+    // JWT에서 사용자의 관리자 여부를 확인합니다.
     public boolean isAdminFromToken(String token) {
         Claims claims = Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token).getBody();
         return claims.get("admin", Boolean.class);
