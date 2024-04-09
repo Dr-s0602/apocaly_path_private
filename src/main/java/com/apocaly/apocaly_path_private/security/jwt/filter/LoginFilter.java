@@ -4,8 +4,6 @@ package com.apocaly.apocaly_path_private.security.jwt.filter;
 import com.apocaly.apocaly_path_private.security.jwt.util.JWTUtil;
 import com.apocaly.apocaly_path_private.user.model.input.InputUser;
 import com.apocaly.apocaly_path_private.user.model.output.CustomUserDetails;
-import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -56,7 +55,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     // 로그인 성공 시 실행되는 메소드입니다. 인증된 사용자 정보를 바탕으로 JWT를 생성하고, 이를 응답 헤더에 추가합니다.
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) {
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException {
         // 인증 객체에서 CustomUserDetails를 추출합니다.
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
 
@@ -71,6 +70,23 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         // 클라이언트가 Authorization 헤더를 읽을 수 있도록, 해당 헤더를 노출시킵니다.
         response.setHeader("Access-Control-Expose-Headers", "Authorization");
+
+        // 여기서 부터 사용자 정보를 응답 바디에 추가하는 코드입니다.
+        // 사용자의 권한이나 추가 정보를 JSON 형태로 변환하여 응답 바디에 포함시킬 수 있습니다.
+        boolean isAdmin = customUserDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        Map<String, Object> responseBody = new HashMap<>();
+        responseBody.put("username", username);
+        responseBody.put("isAdmin", isAdmin);
+
+        // ObjectMapper를 사용하여 Map을 JSON 문자열로 변환합니다.
+        String responseBodyJson = new ObjectMapper().writeValueAsString(responseBody);
+
+        // 응답 컨텐츠 타입을 설정합니다.
+        response.setContentType("application/json");
+
+        // 응답 바디에 JSON 문자열을 작성합니다.
+        response.getWriter().write(responseBodyJson);
+        response.getWriter().flush();
     }
 
     // 로그인 실패 시 실행되는 메소드입니다. 실패한 경우, HTTP 상태 코드 401을 반환합니다.

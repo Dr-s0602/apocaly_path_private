@@ -10,6 +10,7 @@ import com.apocaly.apocaly_path_private.security.jwt.util.JWTUtil;
 // Spring Framework 설정 관련 클래스들을 import 합니다.
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -57,8 +58,9 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 // URL 별 접근 권한을 설정합니다.
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.POST,"/notice").hasRole("ADMIN")
                         // 특정 경로에 대한 접근을 누구나 허용합니다.
-                        .requestMatchers("/api/auth/user","/login","/").permitAll()
+                        .requestMatchers("/api/auth/user","/login","/notice").permitAll()
                         // 나머지 요청에 대해서는 인증을 요구합니다.
                         .anyRequest().authenticated()
                 )
