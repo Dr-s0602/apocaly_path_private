@@ -6,7 +6,6 @@ import com.apocaly.apocaly_path_private.user.model.output.CustomUserDetails;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -43,12 +42,10 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("존재하지 않는 이메일입니다: " + inputUser.getEmail()));
         // 사용자 계정이 삭제된 경우 UsernameNotFoundException 예외를 발생시킵니다.
         if (user.getIsDelete()) {
-            log.info("1");
             throw new DisabledException ("삭제된 계정입니다: " + inputUser.getEmail());
         }
         // 사용자 계정이 활성화되지 않은 경우 UsernameNotFoundException 예외를 발생시킵니다.
         if (user.getIsActivated()) {
-            log.info("2");
             throw new LockedException("활성화되지 않은 계정입니다: " + inputUser.getEmail());
         }
         return user; // 유효한 사용자 정보를 반환합니다.

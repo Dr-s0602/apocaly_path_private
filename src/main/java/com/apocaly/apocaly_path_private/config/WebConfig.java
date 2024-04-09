@@ -19,7 +19,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 // 오직 "http://localhost:3005" 이 오리진에서 오는 요청만을 허용합니다.
                 // 개발 단계에서는 일반적으로 프론트엔드 서버의 주소가 됩니다.
-                .allowedOrigins("http://localhost:3005")
+                .allowedOrigins("http://localhost:3000")
                 // 해당 오리진에서 허용할 HTTP 메소드를 지정합니다.
                 // GET, POST, PUT, DELETE, HEAD, OPTIONS 메소드를 허용합니다.
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS")
