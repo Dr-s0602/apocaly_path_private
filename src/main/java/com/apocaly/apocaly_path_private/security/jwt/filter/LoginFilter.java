@@ -26,6 +26,10 @@ import java.util.Map;
 @Slf4j
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
+    private final Long accessExpiredMs;
+    private final Long refreshExpiredMs;
+
+
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
 
@@ -33,6 +37,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
+        refreshExpiredMs = 86400000L;
+        accessExpiredMs = 600000L;
     }
 
     @Override
@@ -63,10 +69,11 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String username = customUserDetails.getUsername();
 
         // 사용자 이름을 사용하여 JWT를 생성합니다.
-        String token = jwtUtil.generateToken(username);
+        String access  = jwtUtil.generateToken(username,"access",accessExpiredMs);
+        String refresh  = jwtUtil.generateToken(username,"refresh",refreshExpiredMs);
 
         // 응답 헤더에 JWT를 'Bearer' 토큰으로 추가합니다.
-        response.addHeader("Authorization", "Bearer " + token);
+        response.addHeader("Authorization", "Bearer " + access);
 
         // 클라이언트가 Authorization 헤더를 읽을 수 있도록, 해당 헤더를 노출시킵니다.
         response.setHeader("Access-Control-Expose-Headers", "Authorization");
@@ -77,6 +84,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         Map<String, Object> responseBody = new HashMap<>();
         responseBody.put("username", username);
         responseBody.put("isAdmin", isAdmin);
+        responseBody.put("refresh",refresh);
 
         // ObjectMapper를 사용하여 Map을 JSON 문자열로 변환합니다.
         String responseBodyJson = new ObjectMapper().writeValueAsString(responseBody);
@@ -92,7 +100,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     // 로그인 실패 시 실행되는 메소드입니다. 실패한 경우, HTTP 상태 코드 401을 반환합니다.
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {
-        log.info("Authentication failed: {}", failed.getMessage());
 
         // failed 객체로부터 최종 원인 예외를 찾습니다.
         Throwable rootCause = failed;
