@@ -1,19 +1,18 @@
 package com.apocaly.apocaly_path_private.notice.model.input;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.util.UUID;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.*;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class Notice_Input {
+    @NotBlank(message = "Title cannot be empty")
+    @Size(max = 255, message= "Title cannot exceed 255 characters")
     private String title;
+    @NotBlank(message = "Content cannot be empty")
     private String content;
-    private UUID authorId;
     private Boolean isPinned;
 }

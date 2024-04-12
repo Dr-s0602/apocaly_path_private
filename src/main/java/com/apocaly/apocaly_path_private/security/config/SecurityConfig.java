@@ -60,7 +60,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST,"/notice").hasRole("ADMIN")
                         // 특정 경로에 대한 접근을 누구나 허용합니다.
-                        .requestMatchers("/api/auth/user","/login","/notice").permitAll()
+                        .requestMatchers("/api/auth/user","/login","/notice","/reissue").permitAll()
                         // 나머지 요청에 대해서는 인증을 요구합니다.
                         .anyRequest().authenticated()
                 )

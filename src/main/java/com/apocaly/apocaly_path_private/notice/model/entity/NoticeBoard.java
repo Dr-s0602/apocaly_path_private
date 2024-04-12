@@ -1,5 +1,6 @@
 package com.apocaly.apocaly_path_private.notice.model.entity;
 
+import com.apocaly.apocaly_path_private.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,6 +28,10 @@ public class NoticeBoard {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id", referencedColumnName = "id", insertable = false, updatable = false)
+    private User author;
+
     @Column(name = "author_id", columnDefinition = "CHAR(36)", nullable = false)
     private UUID authorId;
 
@@ -38,17 +43,32 @@ public class NoticeBoard {
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
 
+    @PrePersist
+    protected void onCreate() {
+        createdAt = new Date();
+        updatedAt = new Date();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = new Date();
+    }
+
+
+    @Builder.Default
     @Column(nullable = false)
-    private Integer views;
+    private Integer views = 0;
 
     @Column(length = 50)
     private String status;
 
+    @Builder.Default
     @Column(name = "comments_count", nullable = false)
-    private Integer commentsCount;
+    private Integer commentsCount = 0;
 
+    @Builder.Default
     @Column(name = "like_count", nullable = false)
-    private Integer likeCount;
+    private Integer likeCount = 0;
 
     @Column(name = "is_pinned", nullable = false)
     private Boolean isPinned;

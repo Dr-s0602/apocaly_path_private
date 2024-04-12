@@ -4,6 +4,8 @@ import com.apocaly.apocaly_path_private.notice.model.entity.NoticeBoard;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -14,6 +16,13 @@ public interface NoticeRepository extends JpaRepository<NoticeBoard, UUID> {
 
     List<NoticeBoard> findTop5ByCategoryAndIsPinnedTrueOrderByCreatedAtDesc(String category);
 
-    Page<NoticeBoard> findByCategoryAndStatusNotAndTitleContainingIgnoreCaseOrderByCreatedAtDesc(
-            String category, String status, String title, Pageable pageable);
+    // NoticeRepository 인터페이스 내부
+    @Query("SELECT n FROM NoticeBoard n JOIN n.author a WHERE n.category = :category AND n.status = :status" +
+            " AND (:title IS NULL OR :title = '' OR LOWER(n.title) LIKE LOWER(CONCAT('%', :title, '%')))" +
+            " ORDER BY n.createdAt DESC")
+    Page<NoticeBoard> findByCategoryAndStatusAndTitleContainingIgnoreCase(
+            @Param("category") String category,
+            @Param("status") String status,
+            @Param("title") String title,
+            Pageable pageable);
 }

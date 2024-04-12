@@ -29,6 +29,8 @@ dependencies {
 	compileOnly 'org.projectlombok:lombok' // Lombok 라이브러리를 컴파일 시간 의존성으로 추가합니다. 자동으로 getter, setter, constructor 등을 생성해 줍니다.
 	developmentOnly 'org.springframework.boot:spring-boot-devtools' // 개발 시 유용한 도구(예: 자동 리스타트)를 제공하는 Spring Boot Devtools를 추가합니다.
 	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client' // MariaDB JDBC 드라이버를 런타임 시 의존성으로 추가합니다.
+	// Spring Boot Validation 스타터 추가
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	annotationProcessor 'org.projectlombok:lombok' // Lombok을 annotation processor로 사용합니다.
 	testImplementation 'org.springframework.boot:spring-boot-starter-test' // 테스트를 위한 Spring Boot 테스트 스타터를 추가합니다.
 	testImplementation 'org.springframework.security:spring-security-test' // Spring Security 테스트를 위한 의존성을 추가합니다.
