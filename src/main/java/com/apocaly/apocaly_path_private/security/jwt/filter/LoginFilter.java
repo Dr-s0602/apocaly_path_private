@@ -2,8 +2,13 @@
 package com.apocaly.apocaly_path_private.security.jwt.filter;
 
 import com.apocaly.apocaly_path_private.security.jwt.util.JWTUtil;
+import com.apocaly.apocaly_path_private.security.model.entity.RefreshToken;
+import com.apocaly.apocaly_path_private.security.service.RefreshService;
+import com.apocaly.apocaly_path_private.user.model.entity.User;
 import com.apocaly.apocaly_path_private.user.model.input.InputUser;
 import com.apocaly.apocaly_path_private.user.model.output.CustomUserDetails;
+import com.apocaly.apocaly_path_private.user.repository.UserRepository;
+import com.apocaly.apocaly_path_private.user.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,6 +26,8 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 // Lombok의 @Slf4j 어노테이션을 사용하여 로깅을 간편하게 합니다.
 @Slf4j
@@ -29,12 +36,16 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final Long accessExpiredMs;
     private final Long refreshExpiredMs;
 
+    private final UserService userService;
+    private final RefreshService refreshService;
 
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
 
     // 생성자를 통해 AuthenticationManager와 JWTUtil의 인스턴스를 주입받습니다.
-    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil) {
+    public LoginFilter(UserService userService, RefreshService refreshService, AuthenticationManager authenticationManager, JWTUtil jwtUtil) {
+        this.userService = userService;
+        this.refreshService = refreshService;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         refreshExpiredMs = 86400000L;
@@ -71,6 +82,21 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         // 사용자 이름을 사용하여 JWT를 생성합니다.
         String access  = jwtUtil.generateToken(username,"access",accessExpiredMs);
         String refresh  = jwtUtil.generateToken(username,"refresh",refreshExpiredMs);
+        Optional<User> userOptional = userService.findByEmail(username);
+        if(userOptional.isPresent()){
+            User user = userOptional.get();
+
+            RefreshToken refreshToken = RefreshToken.builder()
+                    .id(UUID.randomUUID())
+                    .status("activated")
+                    .userAgent(request.getHeader("User-Agent"))
+                    .user(user)
+                    .tokenValue(refresh)
+                    .expiresIn(refreshExpiredMs)
+                    .build();
+
+            refreshService.save(refreshToken);
+        }
 
         // 응답 헤더에 JWT를 'Bearer' 토큰으로 추가합니다.
         response.addHeader("Authorization", "Bearer " + access);

@@ -64,7 +64,6 @@ public class JWTFilter extends OncePerRequestFilter {
             return;
         }
 
-
         // token에서 category 가져오기
         String category = jwtUtil.getCategoryFromToken(token);
         // 토큰 category 가 access 가 아니 라면 만료 된 토큰 이라고 판단

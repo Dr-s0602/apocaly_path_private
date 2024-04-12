@@ -23,6 +23,7 @@ public class UserService {
     }
 
 
+
     @Transactional
     public User signUpUser(InputUser inputUser) {
         userRepository.findByEmail(inputUser.getEmail())
@@ -43,5 +44,10 @@ public class UserService {
                 .isEmailVerified(false)
                 .isAdmin(false)
                 .build();
+    }
+
+    @Transactional
+    public Optional<User> findByEmail(String username) {
+        return userRepository.findByEmail(username);
     }
 }
