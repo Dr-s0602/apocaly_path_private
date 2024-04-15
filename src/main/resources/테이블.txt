@@ -1,0 +1,55 @@
+
+
+테이블 이름: users
+목적: 사용자 정보를 저장합니다.
+필드 목록:
+id: 사용자의 고유 식별자. CHAR(36), 필수 입력.
+email: 사용자의 이메일 주소. VARCHAR(255), 필수 입력, 유니크.
+password: 사용자의 비밀번호. VARCHAR(255), 필수 입력.
+created_at: 계정 생성 날짜 및 시간. TIMESTAMP, 기본값은 현재 시간.
+last_login: 마지막 로그인 날짜 및 시간. TIMESTAMP, NULL 가능, 기본값은 NULL.
+is_delete: 계정 삭제 여부. TINYINT(1), 필수 입력, 기본값은 0.
+is_activated: 계정 활성화 여부. TINYINT(1), 필수 입력, 기본값은 0.
+is_email_verified: 이메일 인증 여부. TINYINT(1), 필수 입력, 기본값은 0.
+is_admin: 관리자 여부. TINYINT(1), 기본값은 0.
+제약 조건: PRIMARY KEY (id)
+인덱스: 없음
+관계: 없음
+기타 주석: is_admin 컬럼은 사용자가 관리자 권한을 가지고 있는지를 나타냅니다.
+
+테이블 이름: notice_board
+목적: 공지사항 및 게시글 정보를 저장합니다.
+필드 목록:
+id: 게시글의 고유 식별자. CHAR(36), 필수 입력.
+title: 게시글 제목. VARCHAR(255), 필수 입력.
+content: 게시글 내용. TEXT, 필수 입력.
+author_id: 게시글 작성자의 사용자 ID. CHAR(36), 필수 입력.
+created_at: 게시글 생성 날짜 및 시간. TIMESTAMP, 기본값은 현재 시간.
+updated_at: 게시글 수정 날짜 및 시간. TIMESTAMP, 현재 시간으로 자동 업데이트.
+views: 게시글 조회수. INT, 기본값은 0.
+status: 게시글 상태. VARCHAR(50).
+comments_count: 게시글의 댓글 수. INT, 기본값은 0.
+like_count: 게시글의 좋아요 수. INT, 기본값은 0.
+is_pinned: 게시글 고정 여부. TINYINT(1), 기본값은 0.
+category: 게시글 카테고리. VARCHAR(50).
+제약 조건: PRIMARY KEY (id), FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
+인덱스: 없음
+관계: author_id 필드는 users 테이블의 id 필드와 외래 키 관계를 가집니다.
+기타 주석: updated_at 필드는 게시글이 수정될 때마다 자동으로 현재 시간으로 업데이트됩니다.
+
+
+테이블 이름: refresh_tokens
+목적: 사용자의 리프레시 토큰 정보를 저장합니다.
+필드 목록:
+id: 리프레시 토큰의 고유 식별자. CHAR(36), 필수 입력.
+user_id: 리프레시 토큰을 소유한 사용자의 ID. CHAR(36), 필수 입력.
+token_value: 리프레시 토큰 값. VARCHAR(255), 필수 입력.
+issued_at: 토큰 발급 날짜 및 시간. TIMESTAMP, 기본값은 현재 시간.
+expires_in: 토큰 만료 시간(초). BIGINT, 필수 입력.
+expiration_date: 토큰 만료 날짜 및 시간. TIMESTAMP, 필수 입력.
+user_agent: 토큰 발급 당시 사용된 사용자 에이전트. TEXT.
+status: 토큰 상태. VARCHAR(50).
+제약 조건: PRIMARY KEY (id), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+인덱스: 없음
+관계: user_id 필드는 users 테이블의 id 필드와 외래 키 관계를 가집니다.
+기타 주석: 토큰의 상태는 status 필드를 통해 관리됩니다.
