@@ -2,6 +2,7 @@ package com.apocaly.apocaly_path_private.security.config;
 
 
 // Spring Security와 관련된 클래스들을 import 합니다.
+import com.apocaly.apocaly_path_private.security.handler.CustomLogoutHandler;
 import com.apocaly.apocaly_path_private.security.jwt.filter.JWTFilter;
 import com.apocaly.apocaly_path_private.security.jwt.filter.LoginFilter;
 import com.apocaly.apocaly_path_private.security.jwt.util.JWTUtil;
@@ -10,6 +11,7 @@ import com.apocaly.apocaly_path_private.security.jwt.util.JWTUtil;
 // Spring Framework 설정 관련 클래스들을 import 합니다.
 import com.apocaly.apocaly_path_private.security.service.RefreshService;
 import com.apocaly.apocaly_path_private.user.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -54,22 +56,20 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // CSRF, formLogin, httpBasic 인증을 비활성화합니다.
                 .csrf(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
-                // URL 별 접근 권한을 설정합니다.
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST,"/notice").hasRole("ADMIN")
-                        // 특정 경로에 대한 접근을 누구나 허용합니다.
-                        .requestMatchers("/api/auth/user","/login","/notice","/reissue").permitAll()
-                        // 나머지 요청에 대해서는 인증을 요구합니다.
-                        .anyRequest().authenticated()
-                )
-                // JWTFilter와 LoginFilter를 필터 체인에 추가합니다.
+                        .requestMatchers(HttpMethod.POST, "/notice").hasRole("ADMIN")
+                        .requestMatchers("/api/auth/user", "/login", "/notice", "/reissue").permitAll()
+                        .anyRequest().authenticated())
                 .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class)
-                .addFilterAt(new LoginFilter(userService,refreshService,authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class)
-                // 세션 정책을 STATELESS로 설정하여 세션을 사용하지 않도록 합니다.
+                .addFilterAt(new LoginFilter(userService, refreshService, authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class)
+                .logout(logout -> logout
+                        .addLogoutHandler(new CustomLogoutHandler(jwtUtil, refreshService, userService))
+                        .logoutSuccessHandler((request, response, authentication) -> {
+                            response.setStatus(HttpServletResponse.SC_OK);
+                        }))
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 

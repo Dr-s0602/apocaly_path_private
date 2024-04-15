@@ -6,6 +6,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -16,11 +17,23 @@ public class RefreshService {
         this.refreshRepository = refreshRepository;
     }
 
-    public RefreshToken save(RefreshToken refreshToken) {
-        return refreshRepository.save(refreshToken);
+    public void save(RefreshToken refreshToken) {
+        refreshRepository.save(refreshToken);
     }
 
     public Optional<RefreshToken> findByTokenValue(String token) {
         return refreshRepository.findByTokenValue(token);
+    }
+
+    public Boolean existsByRefresh(String tokenValue) {
+        return refreshRepository.existsByTokenValue(tokenValue);
+    }
+
+    public void deleteByRefresh(String tokenValue) {
+        refreshRepository.deleteByTokenValue(tokenValue);
+    }
+
+    public Optional<RefreshToken> findByUserId(UUID id) {
+        return refreshRepository.findByUserId(id);
     }
 }
