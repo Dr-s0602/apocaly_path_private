@@ -152,9 +152,9 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         Map<String, Object> responseData = new HashMap<>();
         response.setContentType("application/json;charset=UTF-8");
         response.setCharacterEncoding("UTF-8");
-        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.setStatus(HttpStatus.BAD_REQUEST.value());
         responseData.put("timestamp", LocalDateTime.now().toString());
-        responseData.put("status", HttpStatus.UNAUTHORIZED.value());
+        responseData.put("status", HttpStatus.BAD_REQUEST.value());
         responseData.put("error", "Unauthorized");
         responseData.put("message", message);
         responseData.put("path", request.getRequestURI());
@@ -163,6 +163,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         try {
             String jsonResponse = new ObjectMapper().writeValueAsString(responseData);
             response.getWriter().write(jsonResponse);
+            response.getWriter().flush();
         } catch (IOException ignored) {
         }
     }
