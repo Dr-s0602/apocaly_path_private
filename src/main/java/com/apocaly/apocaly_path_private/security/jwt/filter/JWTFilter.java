@@ -42,6 +42,10 @@ public class JWTFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+        if ("/logout".equals(requestURI)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         // 'Authorization' 헤더가 없거나 Bearer 토큰이 아니면 요청을 계속 진행합니다.
         if( authorization == null || !authorization.startsWith("Bearer ")){
