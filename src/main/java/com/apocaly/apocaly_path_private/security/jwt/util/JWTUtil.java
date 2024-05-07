@@ -5,6 +5,7 @@ import com.apocaly.apocaly_path_private.user.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
@@ -14,9 +15,11 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 
 // 스프링 컨테이너에 의해 관리되는 컴포넌트로 선언합니다.
 @Component
+@Slf4j
 public class JWTUtil {
 
     // JWT 생성과 검증에 사용될 비밀키와 만료 시간을 필드로 선언합니다.

@@ -1,13 +1,17 @@
 package com.apocaly.apocaly_path_private.notice.controller;
 
 import com.apocaly.apocaly_path_private.notice.model.entity.NoticeBoard;
+import com.apocaly.apocaly_path_private.notice.model.entity.UserNoticeLike;
+import com.apocaly.apocaly_path_private.notice.model.entity.UserNoticeLikeId;
 import com.apocaly.apocaly_path_private.notice.model.input.Notice_Input;
 import com.apocaly.apocaly_path_private.notice.service.NoticeService;
 import com.apocaly.apocaly_path_private.security.jwt.util.JWTUtil;
 import com.apocaly.apocaly_path_private.user.model.entity.User;
 import com.apocaly.apocaly_path_private.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +21,7 @@ import java.util.UUID;
 
 @RestController // 이 클래스가 RESTful 웹 서비스의 컨트롤러임을 나타냅니다.
 @RequestMapping("/notice") // 이 컨트롤러의 모든 메소드가 처리할 기본 URL 경로를 '/notice'로 설정합니다.
+@Slf4j
 public class NoticeController {
 
     private final NoticeService noticeService; // 공지사항 관련 비즈니스 로직을 처리하는 서비스
@@ -73,4 +78,32 @@ public class NoticeController {
 
         return ResponseEntity.ok(notices); // 조회된 공지사항 정보와 함께 OK 상태 코드를 반환합니다.
     }
+
+    @PostMapping("/read/{postId}")
+    public ResponseEntity<String> incrementReadCount(@PathVariable String postId){
+        try {
+            noticeService.incrementReadCount(postId);
+            return ResponseEntity.ok("Read count incremented successfully");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error incrementing read count: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/likes")
+    public ResponseEntity<String> toggleLike(HttpServletRequest request, @RequestBody UserNoticeLikeId requestData) {
+        try {
+            String token = request.getHeader("Authorization").substring("Bearer ".length());
+            Optional<User> userOptional = userRepository.findByEmail(jwtUtil.getUserEmailFromToken(token));
+            if (userOptional.isPresent()) {
+                requestData.setUserId(userOptional.get().getId());
+                String result = noticeService.toggleLike(requestData);
+                return ResponseEntity.ok(result);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error processing like toggle: " + e.getMessage());
+        }
+    }
+
 }

@@ -1,5 +1,7 @@
 package com.apocaly.apocaly_path_private.exception;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResponseStatusException.class)
@@ -53,5 +56,14 @@ public class GlobalExceptionHandler {
         });
         // 유효성 검사 실패에 대한 상세 정보를 담은 맵을 클라이언트에 반환합니다.
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ExpiredJwtException.class)
+    public ResponseEntity<String> handleExpiredJwtException(ExpiredJwtException ex) {
+        log.info("예외 처리 해야함");
+        // 클라이언트에게 토큰 만료 메시지와 함께 401 상태 코드를 반환합니다.
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body("Session has expired. Please log in again.");
     }
 }
