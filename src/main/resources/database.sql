@@ -51,3 +51,10 @@ CREATE TABLE user_notice_likes (
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (notice_id) REFERENCES notice_board(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+ALTER TABLE users
+ADD COLUMN login_type VARCHAR(50) DEFAULT 'local';
+
+ALTER TABLE users
+ADD COLUMN sns_access_token VARCHAR(255) DEFAULT NULL COMMENT 'SNS access token for any login type';

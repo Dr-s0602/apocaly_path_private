@@ -55,7 +55,7 @@ public class CustomUserDetails implements UserDetails {
     // 계정이 잠겨있지 않은지를 반환합니다.
     @Override
     public boolean isAccountNonLocked() {
-        return !this.user.getIsDelete(); // isDelete가 0이면 계정이 잠겨있지 않은 것으로 간주합니다.
+        return !this.user.getIsDelete(); // isDelete가 false이면 계정이 잠겨있지 않은 것으로 간주합니다.
     }
 
     // 사용자의 크리덴셜(비밀번호 등)이 만료되지 않았는지를 반환합니다.
@@ -67,6 +67,6 @@ public class CustomUserDetails implements UserDetails {
     // 사용자 계정이 활성화(사용 가능) 상태인지를 반환합니다.
     @Override
     public boolean isEnabled() {
-        return !this.user.getIsActivated(); // isActivated가 0이면 활성화 상태입니다.
+        return this.user.getIsActivated(); // isActivated가 true이면 활성화 상태입니다.
     }
 }

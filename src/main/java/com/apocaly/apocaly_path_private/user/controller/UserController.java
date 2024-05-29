@@ -28,5 +28,5 @@ public class UserController {
         User newUser = userService.signUpUser(user);
         return ResponseEntity.ok(newUser);
     }
-}
+    }
 

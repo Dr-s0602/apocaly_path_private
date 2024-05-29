@@ -9,19 +9,20 @@ import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.Optional;
 
-@Slf4j // Lombok의 로깅을 위한 어노테이션. 이 클래스에서 로깅이 필요할 때 사용합니다.
+@Slf4j
 public class CustomLogoutHandler implements LogoutHandler {
-    private final JWTUtil jwtUtil; // JWT 처리를 위한 유틸리티 클래스
-    private final RefreshService refreshService; // 리프레시 토큰을 관리하는 서비스
-    private final UserService userService; // 사용자 정보를 관리하는 서비스
+    private final JWTUtil jwtUtil;
+    private final RefreshService refreshService;
+    private final UserService userService;
 
-    // 의존성 주입을 위한 생성자
     public CustomLogoutHandler(JWTUtil jwtUtil, RefreshService refreshService, UserService userService) {
         this.jwtUtil = jwtUtil;
         this.refreshService = refreshService;
@@ -55,6 +56,20 @@ public class CustomLogoutHandler implements LogoutHandler {
             Optional<User> userOptional = userService.findByEmail(userName);
             if (userOptional.isPresent()) {
                 User user = userOptional.get();
+
+                // 카카오 로그아웃 처리
+                if ("kakao".equals(user.getLoginType())) {
+                    String kakaoAccessToken = user.getSnsAccessToken(); // 저장된 카카오 액세스 토큰 사용
+                    String kakaoLogoutUrl = "https://kapi.kakao.com/v1/user/logout";
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.set("Authorization", "Bearer " + kakaoAccessToken);
+
+                    HttpEntity<String> kakaoRequestEntity = new HttpEntity<>(headers);
+                    RestTemplate restTemplate = new RestTemplate();
+                    ResponseEntity<String> kakaoResponse = restTemplate.exchange(kakaoLogoutUrl, HttpMethod.POST, kakaoRequestEntity, String.class);
+                    log.info("Kakao logout response = {}", kakaoResponse.getBody());
+                }
+
                 Optional<RefreshToken> refresh = refreshService.findByUserId(user.getId());
                 refresh.ifPresent(refreshToken -> refreshService.deleteByRefresh(refreshToken.getTokenValue()));
             }
@@ -63,5 +78,4 @@ public class CustomLogoutHandler implements LogoutHandler {
         // 성공적인 로그아웃 응답을 설정합니다.
         response.setStatus(HttpServletResponse.SC_OK);
     }
-
 }
