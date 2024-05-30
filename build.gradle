@@ -29,16 +29,16 @@ dependencies {
 	compileOnly 'org.projectlombok:lombok' // Lombok 라이브러리를 컴파일 시간 의존성으로 추가합니다. 자동으로 getter, setter, constructor 등을 생성해 줍니다.
 	developmentOnly 'org.springframework.boot:spring-boot-devtools' // 개발 시 유용한 도구(예: 자동 리스타트)를 제공하는 Spring Boot Devtools를 추가합니다.
 	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client' // MariaDB JDBC 드라이버를 런타임 시 의존성으로 추가합니다.
-	// Spring Boot Validation 스타터 추가
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-validation' // Spring Boot Validation 스타터 추가
 	annotationProcessor 'org.projectlombok:lombok' // Lombok을 annotation processor로 사용합니다.
 	testImplementation 'org.springframework.boot:spring-boot-starter-test' // 테스트를 위한 Spring Boot 테스트 스타터를 추가합니다.
 	testImplementation 'org.springframework.security:spring-security-test' // Spring Security 테스트를 위한 의존성을 추가합니다.
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5' // JWT를 생성하고 검증하기 위한 JJWT API를 추가합니다.
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5' // JJWT 구현체를 런타임 시 의존성으로 추가합니다.
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5' // JSON 처리를 위한 Jackson과 연동되는 JJWT 의존성을 런타임 시 추가합니다.
-
+	implementation 'org.json:json:20210307' // JSON 파싱을 위한 org.json 라이브러리를 추가합니다.
 }
+
 tasks.named('test') {
 	useJUnitPlatform() // 테스트 작업을 실행할 때 JUnit 플랫폼을 사용하도록 설정합니다.
 }

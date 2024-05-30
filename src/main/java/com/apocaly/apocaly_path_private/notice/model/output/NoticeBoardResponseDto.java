@@ -6,7 +6,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Data
 @AllArgsConstructor
@@ -15,15 +17,15 @@ public class NoticeBoardResponseDto {
     private UUID id;
     private String title;
     private String content;
-    private String authorEmail; // 사용자 이메일만 포함
+    private String authorEmail;
     private Date createdAt;
     private Integer views;
     private Integer commentsCount;
     private Integer likeCount;
     private Boolean isPinned;
     private String category;
+    private List<String> fileIds;
 
-    // 생성자에서 NoticeBoard와 User 엔티티를 받아 필요한 정보를 설정
     public NoticeBoardResponseDto(NoticeBoard noticeBoard) {
         this.id = noticeBoard.getId();
         this.title = noticeBoard.getTitle();
@@ -35,6 +37,8 @@ public class NoticeBoardResponseDto {
         this.likeCount = noticeBoard.getLikeCount();
         this.isPinned = noticeBoard.getIsPinned();
         this.category = noticeBoard.getCategory();
+        this.fileIds = noticeBoard.getFiles().stream()
+                .map(file -> file.getFileId())
+                .collect(Collectors.toList());
     }
 }
-

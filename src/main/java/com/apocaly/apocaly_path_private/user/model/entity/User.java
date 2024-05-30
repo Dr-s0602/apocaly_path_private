@@ -6,14 +6,12 @@ import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
-import java.time.LocalDateTime;
-import java.util.UUID;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -32,7 +30,7 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String password;
 
     @Column(name = "created_at", nullable = false, updatable = false, insertable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
@@ -53,4 +51,9 @@ public class User {
     @Column(name = "is_admin", nullable = false)
     private Boolean isAdmin;
 
+    @Column(name = "login_type", nullable = false, columnDefinition = "VARCHAR(50) DEFAULT 'local'")
+    private String loginType;
+
+    @Column(name = "sns_access_token", nullable = true)
+    private String snsAccessToken;
 }

@@ -50,4 +50,13 @@ public class UserService {
     public Optional<User> findByEmail(String username) {
         return userRepository.findByEmail(username);
     }
+
+    @Transactional
+    public User signUpSnsUser(User user) {
+        userRepository.findByEmail(user.getEmail())
+                .ifPresent(u -> {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "이메일이 이미 사용중입니다.");
+                });
+        return userRepository.save(user);
+    }
 }

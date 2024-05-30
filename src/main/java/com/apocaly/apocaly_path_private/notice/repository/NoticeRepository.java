@@ -16,8 +16,7 @@ public interface NoticeRepository extends JpaRepository<NoticeBoard, UUID> {
 
     List<NoticeBoard> findTop5ByCategoryAndIsPinnedTrueOrderByCreatedAtDesc(String category);
 
-    // NoticeRepository 인터페이스 내부
-    @Query("SELECT n FROM NoticeBoard n JOIN n.author a WHERE n.category = :category AND n.status = :status" +
+    @Query("SELECT DISTINCT n FROM NoticeBoard n LEFT JOIN FETCH n.files f WHERE n.category = :category AND n.status = :status" +
             " AND (:title IS NULL OR :title = '' OR LOWER(n.title) LIKE LOWER(CONCAT('%', :title, '%')))" +
             " ORDER BY n.createdAt DESC")
     Page<NoticeBoard> findByCategoryAndStatusAndTitleContainingIgnoreCase(

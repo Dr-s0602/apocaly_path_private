@@ -1,5 +1,6 @@
 package com.apocaly.apocaly_path_private.notice.model.entity;
 
+import com.apocaly.apocaly_path_private.file.model.entity.NoticeFile;
 import com.apocaly.apocaly_path_private.user.model.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -8,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -54,7 +56,6 @@ public class NoticeBoard {
         updatedAt = new Date();
     }
 
-
     @Builder.Default
     @Column(nullable = false)
     private Integer views = 0;
@@ -75,4 +76,7 @@ public class NoticeBoard {
 
     @Column(length = 50)
     private String category;
+
+    @OneToMany(mappedBy = "noticeId", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<NoticeFile> files;
 }
