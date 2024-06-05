@@ -6,6 +6,7 @@ import com.apocaly.apocaly_path_private.security.service.RefreshService;
 import com.apocaly.apocaly_path_private.user.model.entity.User;
 import com.apocaly.apocaly_path_private.user.repository.UserRepository;
 import com.apocaly.apocaly_path_private.user.service.UserService;
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
@@ -27,6 +28,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/auth")
 @Slf4j
+@Hidden
 public class AuthController {
 
     @Value("${kakao.client-id}")
