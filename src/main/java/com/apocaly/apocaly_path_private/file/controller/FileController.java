@@ -2,6 +2,12 @@ package com.apocaly.apocaly_path_private.file.controller;
 
 import com.apocaly.apocaly_path_private.file.model.entity.FileEntity;
 import com.apocaly.apocaly_path_private.file.service.FileService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -20,64 +26,120 @@ import java.util.Map;
 @RestController
 @RequestMapping("/file")
 @Slf4j
+@Tag(name = "File", description = "File management APIs")
 public class FileController {
 
     private final FileService fileService;
 
-    // FileController 생성자
     public FileController(FileService fileService) {
         this.fileService = fileService;
     }
 
-    // 파일 업로드 엔드포인트
     @PostMapping("/upload")
-    public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file, @RequestParam("index") int index) {
-        // 파일을 저장하고 저장된 파일 ID를 반환
+    @Operation(
+            summary = "Upload file",
+            description = "파일 업로드 하는 함수 입니다.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "File upload request body",
+                    required = true,
+                    content = @Content(
+                            mediaType = "multipart/form-data",
+                            schema = @Schema(
+                                    type = "object",
+                                    example = "{ \"file\": \"binary data\", \"index\": 1 }"
+                            )
+                    )
+            ),
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "File uploaded successfully",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(
+                                            type = "object",
+                                            example = "{ \"fileId\": \"UUID\" }"
+                                    )
+                            )
+                    )
+            }
+    )
+    public ResponseEntity<Map<String,String>> uploadFile(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("index") int index
+    ) {
         FileEntity storedFile = fileService.storeFile(file, index);
         return ResponseEntity.ok().body(Map.of("fileId", storedFile.getId()));
     }
 
-    // 파일을 브라우저에 보여주는 엔드포인트
     @GetMapping("/view/{fileId}")
-    public ResponseEntity<Resource> viewFile(@PathVariable String fileId) {
-        try {
-            // 파일 ID로 파일 정보를 가져옴
-            FileEntity fileEntity = fileService.getFileById(fileId);
-            // 파일 경로를 설정
-            Path filePath = Paths.get(fileEntity.getFileUrl()).toAbsolutePath().normalize();
-            Resource resource = new UrlResource(filePath.toUri());
-
-            // 파일이 존재하고 읽을 수 있는 경우, 파일을 반환
-            if (resource.exists() && resource.isReadable()) {
-                return ResponseEntity.ok()
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline;filename=\"" + resource.getFilename() + "\"")
-                        .header(HttpHeaders.CONTENT_TYPE, fileEntity.getFileType())
-                        .body(resource);
-            } else {
-                return ResponseEntity.notFound().build();
+    @Operation(
+            summary = "View file",
+            description = "Displays the file in the browser.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "File displayed successfully",
+                            content = @Content(
+                                    mediaType = "application/octet-stream",
+                                    schema = @Schema(type = "string", format = "binary")
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "File not found",
+                            content = @Content(schema = @Schema())
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "Invalid file ID",
+                            content = @Content(schema = @Schema())
+                    )
             }
-        } catch (MalformedURLException e) {
-            log.error("Error while fetching the file: ", e);
-            return ResponseEntity.badRequest().build();
-        }
+    )
+    public ResponseEntity<Resource> viewFile(@PathVariable String fileId) {
+        return getFileResponse(fileId, "inline");
     }
 
-    // 파일 다운로드 엔드포인트
     @GetMapping("/download/{fileId}")
+    @Operation(
+            summary = "Download file",
+            description = "Downloads the file.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "File downloaded successfully",
+                            content = @Content(
+                                    mediaType = "application/octet-stream",
+                                    schema = @Schema(type = "string", format = "binary")
+                            )
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "File not found",
+                            content = @Content(schema = @Schema())
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "Invalid file ID",
+                            content = @Content(schema = @Schema())
+                    )
+            }
+    )
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileId) {
+        return getFileResponse(fileId, "attachment");
+    }
+
+    private ResponseEntity<Resource> getFileResponse(String fileId, String dispositionType) {
         try {
-            // 파일 ID로 파일 정보를 가져옴
             FileEntity fileEntity = fileService.getFileById(fileId);
-            // 파일 경로를 설정
             Path filePath = Paths.get(fileEntity.getFileUrl()).toAbsolutePath().normalize();
-            log.info("File path: " + filePath.toString());
             Resource resource = new UrlResource(filePath.toUri());
 
-            // 파일이 존재하고 읽을 수 있는 경우, 파일을 다운로드
             if (resource.exists() && resource.isReadable()) {
                 String encodedFilename = UriUtils.encode(fileEntity.getOriginalFilename(), StandardCharsets.UTF_8);
                 return ResponseEntity.ok()
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=\"" + encodedFilename + "\"")
+                        .header(HttpHeaders.CONTENT_DISPOSITION, dispositionType + ";filename=\"" + encodedFilename + "\"")
                         .header(HttpHeaders.CONTENT_TYPE, fileEntity.getFileType())
                         .body(resource);
             } else {

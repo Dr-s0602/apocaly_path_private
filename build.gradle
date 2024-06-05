@@ -37,6 +37,9 @@ dependencies {
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5' // JJWT 구현체를 런타임 시 의존성으로 추가합니다.
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5' // JSON 처리를 위한 Jackson과 연동되는 JJWT 의존성을 런타임 시 추가합니다.
 	implementation 'org.json:json:20210307' // JSON 파싱을 위한 org.json 라이브러리를 추가합니다.
+
+	// Springdoc OpenAPI 의존성 추가
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0' // Spring Boot 3.x와 호환되는 Springdoc OpenAPI 의존성 추가
 }
 
 tasks.named('test') {
